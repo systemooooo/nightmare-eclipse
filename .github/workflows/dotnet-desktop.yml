@@ -27,10 +27,38 @@ jobs:
       with:
         nuget-version: 'latest'
 
+    - name: Clear NuGet http cache
+      shell: pwsh
+      run: nuget locals http-cache -clear
+
     - name: Restore NuGet packages
-      run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln
+      shell: pwsh
+      run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln -NonInteractive
+
+    - name: Verify and fix NtApiDotNet.dll
+      shell: pwsh
+      run: |
+        $dll = Resolve-Path "MiniPlasma/packages/NtApiDotNet.1.1.33/lib/net461/NtApiDotNet.dll"
+        Write-Host "DLL size: $((Get-Item $dll).Length) bytes"
+        $valid = $false
+        try {
+          $asm = [System.Reflection.Assembly]::LoadFile($dll)
+          Write-Host "Valid assembly: $($asm.FullName)"
+          $valid = $true
+        } catch {
+          Write-Host "Invalid assembly, re-downloading..."
+        }
+        if (-not $valid) {
+          $nupkg = "$env:TEMP\NtApiDotNet.1.1.33.nupkg"
+          Invoke-WebRequest "https://www.nuget.org/api/v2/package/NtApiDotNet/1.1.33" -OutFile $nupkg
+          $extract = "$env:TEMP\NtApiDotNet_extracted"
+          Expand-Archive $nupkg -DestinationPath $extract -Force
+          Copy-Item "$extract\lib\net461\NtApiDotNet.dll" $dll -Force
+          Write-Host "Re-download complete, new size: $((Get-Item $dll).Length) bytes"
+        }
 
     - name: Build solution
+      shell: pwsh
       run: >
         msbuild MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln
         /p:Configuration=Release
