@@ -1,0 +1,40 @@
+name: Build MiniPlasma
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'MiniPlasma/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'MiniPlasma/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Restore NuGet packages
+      run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln
+    
+    - name: Build solution
+      run: msbuild MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln /p:Configuration=Release /p:Platform=x64
+    
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: MiniPlasma-build
+        path: |
+          MiniPlasma/**/bin/Release/**/*.exe
+          MiniPlasma/**/bin/Release/**/*.dll
+        retention-days: 30
