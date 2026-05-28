@@ -28,7 +28,7 @@ jobs:
         nuget-version: 'latest'
 
     - name: Restore NuGet packages
-      run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln -MSBuildVersion 17
+      run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln
 
     - name: Build solution
       run: >
