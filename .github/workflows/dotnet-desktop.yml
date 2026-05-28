@@ -31,7 +31,7 @@ jobs:
       run: nuget restore MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln
 
     - name: Build solution
-      run: msbuild MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln /p:Configuration=Release /p:Platform=x64 /m
+      run: msbuild MiniPlasma/PoC_AbortHydration_ArbitraryRegKey_EoP.sln /p:Configuration=Release /m
 
     - name: Upload build artifacts
       if: success()
@@ -41,5 +41,7 @@ jobs:
         path: |
           MiniPlasma/**/bin/Release/**/*.exe
           MiniPlasma/**/bin/Release/**/*.dll
+          MiniPlasma/**/Release/**/*.exe
+          MiniPlasma/**/Release/**/*.dll
         if-no-files-found: error
         retention-days: 30
